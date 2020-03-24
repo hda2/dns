@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"strings"
@@ -681,13 +682,18 @@ func (w *response) Write(m []byte) (int, error) {
 	if w.closed {
 		return 0, &Error{err: "Write called after Close"}
 	}
-
+	cnt := 0
 	switch {
 	case w.udp != nil:
 		return WriteToSessionUDP(w.udp, m, w.udpSession)
 	case w.tcp != nil:
+		cnt++
 		if len(m) > MaxMsgSize {
-			return 0, &Error{err: "message too large"}
+			msg := new(Msg)
+			msg.Unpack(m)
+			return 0, &Error{
+				err: fmt.Sprintf("message too large. Round: %d, Len: %d, Answers: %v", cnt, len(m), msg.Answer),
+			}
 		}
 
 		l := make([]byte, 2)
