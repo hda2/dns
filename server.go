@@ -689,10 +689,8 @@ func (w *response) Write(m []byte) (int, error) {
 	case w.tcp != nil:
 		cnt++
 		if len(m) > MaxMsgSize {
-			msg := new(Msg)
-			msg.Unpack(m)
 			return 0, &Error{
-				err: fmt.Sprintf("message too large. Round: %d, Len: %d, Answers: %v", cnt, len(m), msg.Answer),
+				err: fmt.Sprintf("message too large. Round: %d, Len: %d", cnt, len(m)),
 			}
 		}
 
